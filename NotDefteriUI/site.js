@@ -10,32 +10,28 @@ let notlar = [];
 
 let seciliNot = null;
 
-function listele() {
-    divNotlar.innerHTML = "";
+function notlariGetir() {
 
     axios.get(apiUrl).then(res => {
-        // console.log(res.data);
         notlar = res.data;
-
-        for (const not of notlar) {
-            let a = document.createElement('a');
-            a.not = not;
-            a.className = 'list-group-item list-group-item-action';
-            a.href = '#';
-            a.textContent = not.baslik;
-            a.onclick = (e) => {
-                notuGoster(not);
-            }
-            divNotlar.append(a);
-        }
-        if (seciliNot != null) {
-            notuGoster(notlar.find(x=>x.id==seciliNot.id));
-        }
-        else{
-            frmNot.className='d-none';
-        }
+        notlariListele()
     });
 
+}
+function notlariListele(){
+    divNotlar.innerHTML = "";
+
+    for (const not of notlar) {
+        let a = document.createElement('a');
+        a.not = not;
+        a.className = 'list-group-item list-group-item-action';
+        a.href = '#';
+        a.textContent = not.baslik;
+        a.onclick = (e) => {
+            notuGoster(not);
+        }
+        divNotlar.append(a);
+    }
 }
 
 function notuGoster(not) {
@@ -67,7 +63,9 @@ yeni.onclick = () => {
     axios.post(apiUrl, yeniNot)
         .then(res => {
             seciliNot = res.data;
-            listele();
+            notlar.push(seciliNot);
+            notlariListele();
+            notuGoster(res.data)
         });
 
 }
@@ -75,26 +73,33 @@ yeni.onclick = () => {
 frmNot.onsubmit=(e)=>{
     e.preventDefault();
 
-    let yeniNot={
+    let not={
         id:seciliNot.id,
         baslik:txtBaslik.value,
         icerik:txtIcerik.value
     }
 
-    axios.put(apiUrl+'/'+seciliNot.id,yeniNot)
+    axios.put(apiUrl+'/'+seciliNot.id,not)
     .then(res=>{
-        listele();
-    })
-
-}
-btnSil.onclick=(e)=>{
-
-    axios.delete(apiUrl+'/'+seciliNot.id)
-    .then(res=>{
-        seciliNot=null;
-        listele();
+        seciliNot.baslik=not.baslik;
+        seciliNot.icerik=not.icerik;
+        notlariListele();
+        notuGoster(seciliNot);
     });
 
 }
+btnSil.onclick=()=>{
 
-listele();
+    axios.delete(apiUrl+'/'+seciliNot.id)
+    .then(res=>{
+        let sid=notlar.indexOf(seciliNot);
+        notlar.splice(sid,1);
+        notlariListele();
+        frmNot.className='d-none';
+        if(notlar.length){
+            notuGoster(notlar[Math.min(sid,notlar.length-1)]);
+    }});
+
+}
+
+notlariGetir();
