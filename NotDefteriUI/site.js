@@ -88,7 +88,6 @@ frmNot.onsubmit=(e)=>{
 
 }
 btnSil.onclick=(e)=>{
-    e.preventDefault();
 
     axios.delete(apiUrl+'/'+seciliNot.id)
     .then(res=>{
